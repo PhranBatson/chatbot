@@ -10,7 +10,7 @@ const opts = {
   },
   channels: [
     // config.channel
-    'highonshrugs'
+    'whitephran'
   ] 
 };
 
