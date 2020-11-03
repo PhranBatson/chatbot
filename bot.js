@@ -26,6 +26,7 @@ client.connect();
 
 // Declare JSON
 var gameJson = {
+  activeBattle: false,
   players: 
     [{
       name: "playerName",
@@ -54,6 +55,7 @@ function onMessageHandler (target, context, msg, self) {
 
 // Function to call commands found in chat message
 function cmdSwitch(commandName, target, context) {
+  if (!gameJson.activeBattle) {
   switch(commandName) {
     case '!dice':
       const num = rollDice(6);
@@ -62,23 +64,61 @@ function cmdSwitch(commandName, target, context) {
       console.log(`* Executed ${commandName} command`);
       break;
     case '!join':
-      client.say(target, `${context['display-name']} joined the party!`);
-      console.log(`* Executed ${commandName} command`);
-      gameJson.players.push({name: context['display-name'], class: "Fighter", exp: 0,});
-      console.log(gameJson.players);
+      var dupe = false;
+      gameJson.players.forEach(player => {
+        if(player.name === context['display-name']) {
+          dupe = true;
+      }});
+      if(!dupe) {
+        client.say(target, `${context['display-name']} joined the party!`);
+        gameJson.players.push({name: context['display-name'], class: "Fighter", exp: 0,});
+        console.log(`* Added  ${context['display-name']} to the party`);
+      }
       break;
     case '!owlbear':
+      gameJson.activeBattle = true;
       client.say(target, `THWOMP!!`)
       // call battle function
+      console.log(`* Executed ${commandName} command`);
+      break;
+    case '!fighter':
+      gameJson.players.forEach(player => {
+        if(player.name === context['display-name']) {
+          player.class = "Fighter";
+          console.log(`* Changed ${context['display-name']} class to Fighter.`);
+      }});
+      break;
+    case '!cleric':
+      gameJson.players.forEach(player => {
+        if(player.name === context['display-name']) {
+          player.class = "Cleric";
+          console.log(`* Changed ${context['display-name']} class to Cleric.`);
+      }});
+      break;
+    case '!rogue':
+      gameJson.players.forEach(player => {
+        if(player.name === context['display-name']) {
+          player.class = "Rogue";
+          console.log(`* Changed ${context['display-name']} class to Rogue.`);
+      }});
+      break;
+    case '!wizard':
+      gameJson.players.forEach(player => {
+        if(player.name === context['display-name']) {
+          player.class = "Wizard";
+          console.log(`* Changed ${context['display-name']} class to Wizard.`);
+      }});
       break;
     case '!party':
       var outString = "The party consists of ";
       gameJson.players.forEach(player => {outString += player.name + " the " + player.class + ", ";});
       client.say(target, outString);
+      console.log(gameJson.players);
       break;
     default:
       console.log(`* Unknown command ${commandName}`);
-  }
+  }}
+  else console.log(`* Command received during active battle.`)
 
 }
 
