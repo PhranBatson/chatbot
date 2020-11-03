@@ -37,7 +37,7 @@ var gameJson = {
       name: "playerTwo",
       class: "Fighter",
       exp: 100,
-    }]
+    }],
 }
 
 // Called every time a message comes in
@@ -58,7 +58,7 @@ function cmdSwitch(commandName, target, context) {
   if (!gameJson.activeBattle) {
   switch(commandName) {
     case '!dice':
-      const num = rollDice(6);
+      const num = rollDice(20);
       // console.log(context);
       client.say(target, `${context['display-name']} rolled a ${num}.`);
       console.log(`* Executed ${commandName} command`);
@@ -76,9 +76,14 @@ function cmdSwitch(commandName, target, context) {
       }
       break;
     case '!owlbear':
-      gameJson.activeBattle = true;
+      // gameJson.activeBattle = true;
       client.say(target, `THWOMP!!`)
-      // call battle function
+      // create owlbear with hp based on party size
+      var owlbearHP = spawnOwlbear(gameJson.players.length);
+      console.log(owlbearHP);
+      while(owlbearHP>0) {
+        owlbearHP -= combatRound();
+      }
       console.log(`* Executed ${commandName} command`);
       break;
     case '!fighter':
@@ -119,6 +124,21 @@ function cmdSwitch(commandName, target, context) {
       console.log(`* Unknown command ${commandName}`);
   }}
   else console.log(`* Command received during active battle.`)
+
+}
+
+// Function to calculate owlbear size
+function spawnOwlbear (partySize) {
+  var hp = 21;
+  for (i=0; i<=partySize; i++)  {
+    hp += rollDice(10);
+  }
+  return hp;
+}
+
+// Function to simulate one combat round
+// -returns change to owlbear hp
+function combatRound() {
 
 }
 
