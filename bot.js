@@ -24,9 +24,20 @@ client.on('connected', onConnectedHandler);
 // Connect to Twitch:
 client.connect();
 
-// Declare Variables
-var players = {};
-
+// Declare JSON
+var gameJson = {
+  players: 
+    [{
+      name: "playerName",
+      class: "Wizard",
+      exp: 10,
+    },
+    {
+      name: "playerTwo",
+      class: "Fighter",
+      exp: 100,
+    }]
+}
 // Called every time a message comes in
 function onMessageHandler (target, context, msg, self) {
   if (self) { return; } // Ignore messages from the bot
@@ -52,6 +63,10 @@ function cmdSwitch(commandName, target, context) {
     case '!join':
       client.say(target, `${context['display-name']} joined the party!`);
       console.log(`* Executed ${commandName} command`);
+      gameJson.players.push({name: context['display-name'], class: "Fighter", exp: 0,});
+      console.log(gameJson.players);
+      break;
+    case '!party':
       break;
     default:
       console.log(`* Unknown command ${commandName}`);
