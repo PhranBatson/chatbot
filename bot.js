@@ -67,6 +67,9 @@ function cmdSwitch(commandName, target, context) {
       console.log(gameJson.players);
       break;
     case '!party':
+      var outString = "The party consists of ";
+      gameJson.players.forEach(player => {outString += player.name + " the " + player.class + ", ";});
+      client.say(target, outString);
       break;
     default:
       console.log(`* Unknown command ${commandName}`);
