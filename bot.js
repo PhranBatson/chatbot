@@ -32,9 +32,16 @@ function onMessageHandler (target, context, msg, self) {
   if (self) { return; } // Ignore messages from the bot
 
   // Remove whitespace from chat message
-  const commandName = msg.trim();
+  // const commandName = msg.trim();
 
-  // If the command is known, let's execute it
+  // Turn chat message into array
+  const commandName = msg.split(' ');
+  commandName.forEach(commandName => {cmdSwitch(commandName, target, context);});
+
+}
+
+// Function to call commands found in chat message
+function cmdSwitch(commandName, target, context) {
   switch(commandName) {
     case '!dice':
       const num = rollDice();
