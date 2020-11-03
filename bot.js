@@ -38,6 +38,7 @@ var gameJson = {
       exp: 100,
     }]
 }
+
 // Called every time a message comes in
 function onMessageHandler (target, context, msg, self) {
   if (self) { return; } // Ignore messages from the bot
@@ -55,7 +56,7 @@ function onMessageHandler (target, context, msg, self) {
 function cmdSwitch(commandName, target, context) {
   switch(commandName) {
     case '!dice':
-      const num = rollDice();
+      const num = rollDice(6);
       // console.log(context);
       client.say(target, `${context['display-name']} rolled a ${num}.`);
       console.log(`* Executed ${commandName} command`);
@@ -65,6 +66,10 @@ function cmdSwitch(commandName, target, context) {
       console.log(`* Executed ${commandName} command`);
       gameJson.players.push({name: context['display-name'], class: "Fighter", exp: 0,});
       console.log(gameJson.players);
+      break;
+    case '!owlbear':
+      client.say(target, `THWOMP!!`)
+      // call battle function
       break;
     case '!party':
       var outString = "The party consists of ";
@@ -78,8 +83,7 @@ function cmdSwitch(commandName, target, context) {
 }
 
 // Function called when the "dice" command is issued
-function rollDice () {
-  const sides = 6;
+function rollDice (sides) {
   return Math.floor(Math.random() * sides) + 1;
 }
 
