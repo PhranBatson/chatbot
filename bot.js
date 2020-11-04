@@ -28,18 +28,21 @@ client.connect();
 var gameJson = {
   activeBattle: false,
   howManyRounds: 0,
+  howManyHeals: 0,
   players: 
     [{
       name: "playerName",
+      id: 0,
       class: "Wizard",
       exp: 10,
-      hitpoints: 100,
+      hitpoints: 40,
     },
     {
       name: "playerTwo",
+      id: 1,
       class: "Fighter",
       exp: 100,
-      hitpoints: 100,
+      hitpoints: 40,
     }],
 }
 
@@ -74,7 +77,13 @@ function cmdSwitch(commandName, target, context) {
       }});
       if(!dupe) {
         client.say(target, `${context['display-name']} joined the party!`);
-        gameJson.players.push({name: context['display-name'], class: "Fighter", exp: 0, hitpoints: 100,});
+        gameJson.players.push({
+          name: context['display-name'], 
+          id: gameJson.players.length,
+          class: "Fighter", 
+          exp: 0, 
+          hitpoints: 40,
+        });
         console.log(`* Added  ${context['display-name']} to the party`);
       }
       break;
@@ -83,9 +92,9 @@ function cmdSwitch(commandName, target, context) {
       client.say(target, `THWOMP!!`)
       // create owlbear with hp based on party size
       var owlbearHP = spawnOwlbear(gameJson.players.length);
-      console.log(owlbearHP);
       gameJson.howManyRounds = 0;
       while(owlbearHP>0) {
+        console.log(owlbearHP);
         owlbearHP -= combatRound();
       }
       console.log(`* Executed ${commandName} command`);
@@ -135,7 +144,7 @@ function cmdSwitch(commandName, target, context) {
 function spawnOwlbear (partySize) {
   var hp = 21;
   for (i=0; i<=partySize; i++)  {
-    hp += rollDice(10);
+    hp += rollDice(10) + rollDice(10);
   }
   return hp;
 }
@@ -158,13 +167,22 @@ function owlbearDmgTaken() {
         if((toHit+3) >= 13) {
           dmg += rollDice(8) + 2;
           flanked = true;
+          console.log(`Hit for ${dmg} damage.`);
         }
         break;
       case 'Cleric':
+        var lowHP;
+        gameJson.players.forEach(player => {
+          // find who has least hp
+          if(player.hitpoints<40) {
+
+          }
+        });
         break;
       case 'Wizard':
         if(gameJson.howManyRounds<=3) {
           dmg += rollDice(12) + rollDice(12) + 2;
+          console.log(`Magicd for ${dmg} damage.`);
         }
         else if((toHit-1) >= 13) {
           dmg += rollDice(4) - 1;
@@ -174,7 +192,7 @@ function owlbearDmgTaken() {
     }
   });
   gameJson.players.forEach(player => {
-    if(player.class === "Rogue") {
+    if(player.class === 'Rogue') {
 
   }});
 
