@@ -27,16 +27,19 @@ client.connect();
 // Declare JSON
 var gameJson = {
   activeBattle: false,
+  howManyRounds: 0,
   players: 
     [{
       name: "playerName",
       class: "Wizard",
       exp: 10,
+      hitpoints: 100,
     },
     {
       name: "playerTwo",
       class: "Fighter",
       exp: 100,
+      hitpoints: 100,
     }],
 }
 
@@ -71,7 +74,7 @@ function cmdSwitch(commandName, target, context) {
       }});
       if(!dupe) {
         client.say(target, `${context['display-name']} joined the party!`);
-        gameJson.players.push({name: context['display-name'], class: "Fighter", exp: 0,});
+        gameJson.players.push({name: context['display-name'], class: "Fighter", exp: 0, hitpoints: 100,});
         console.log(`* Added  ${context['display-name']} to the party`);
       }
       break;
@@ -81,6 +84,7 @@ function cmdSwitch(commandName, target, context) {
       // create owlbear with hp based on party size
       var owlbearHP = spawnOwlbear(gameJson.players.length);
       console.log(owlbearHP);
+      gameJson.howManyRounds = 0;
       while(owlbearHP>0) {
         owlbearHP -= combatRound();
       }
@@ -139,7 +143,42 @@ function spawnOwlbear (partySize) {
 // Function to simulate one combat round
 // -returns change to owlbear hp
 function combatRound() {
+  gameJson.howManyRounds++;
 
+  return owlbearDmgTaken();
+}
+
+function owlbearDmgTaken() {
+  var dmg = 0;
+  var flanked = false;
+  gameJson.players.forEach(player => {
+    var toHit = rollDice(20);
+    switch(player.class) {
+      case 'Fighter':
+        if((toHit+3) >= 13) {
+          dmg += rollDice(8) + 2;
+          flanked = true;
+        }
+        break;
+      case 'Cleric':
+        break;
+      case 'Wizard':
+        if(gameJson.howManyRounds<=3) {
+          dmg += rollDice(12) + rollDice(12) + 2;
+        }
+        else if((toHit-1) >= 13) {
+          dmg += rollDice(4) - 1;
+          flanked = true;
+        }
+        break;
+    }
+  });
+  gameJson.players.forEach(player => {
+    if(player.class === "Rogue") {
+
+  }});
+
+  return dmg;
 }
 
 // Function called when the "dice" command is issued
