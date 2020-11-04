@@ -193,7 +193,12 @@ function owlbearDmgTaken() {
   });
   gameJson.players.forEach(player => {
     if(player.class === 'Rogue') {
-
+      var toHit = rollDice(20);
+      if((toHit+1) >= 13) {
+        dmg += rollDice(8);
+        if(flanked) {dmg += rollDice(6) + rollDice(6);}
+        console.log(`Rogued for ${dmg} damage.`);
+      }
   }});
 
   return dmg;
