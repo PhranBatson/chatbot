@@ -94,7 +94,7 @@ function cmdSwitch(commandName, target, context) {
       var owlbearHP = spawnOwlbear(gameJson.players.length);
       gameJson.howManyRounds = 0;
       while(owlbearHP>0) {
-        console.log(owlbearHP);
+        console.log(`Owlbear HP: ${owlbearHP}`);
         owlbearHP -= combatRound();
       }
       console.log(`* Executed ${commandName} command`);
@@ -164,7 +164,7 @@ function owlbearDmgTaken() {
     var toHit = rollDice(20);
     switch(player.class) {
       case 'Fighter':
-        if((toHit+3) >= 13) {
+        if((toHit+3) >= 15) {
           dmg += rollDice(8) + 2;
           flanked = true;
           console.log(`Hit for ${dmg} damage.`);
@@ -184,7 +184,7 @@ function owlbearDmgTaken() {
           dmg += rollDice(12) + rollDice(12) + 2;
           console.log(`Magicd for ${dmg} damage.`);
         }
-        else if((toHit-1) >= 13) {
+        else if((toHit-1) >= 15) {
           dmg += rollDice(4) - 1;
           flanked = true;
         }
@@ -194,7 +194,7 @@ function owlbearDmgTaken() {
   gameJson.players.forEach(player => {
     if(player.class === 'Rogue') {
       var toHit = rollDice(20);
-      if((toHit+1) >= 13) {
+      if((toHit+1) >= 15) {
         dmg += rollDice(8);
         if(flanked) {dmg += rollDice(6) + rollDice(6);}
         console.log(`Rogued for ${dmg} damage.`);
