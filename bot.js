@@ -9,8 +9,7 @@ const opts = {
     password: config.authKey
   },
   channels: [
-    // config.channel
-    'whitephran'
+    config.channel
   ] 
 };
 
