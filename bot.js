@@ -145,8 +145,7 @@ function cmdSwitch(commandName, target, context) {
 // Function to calculate owlbear size
 function spawnOwlbears () {
   var owlbearArr = [];
-  var partySize = gameJson.players.length;
-  for (i=0; i<=partySize; i+=2) {
+  for (i=0; i<=gameJson.players.length; i+=2) {
     var hp = 25;
     for (j=1; j<=5; j++)  {
       hp += rollDice(10);
@@ -161,9 +160,31 @@ function spawnOwlbears () {
 function combatRound() {
   gameJson.howManyRounds++;
 
+  partyDmgTaken();
   owlbearDmgTaken();
 }
 
+//The owlbears damage the party
+function partyDmgTaken() {
+  var possibleOwlbearTargets = [];
+
+  // look for fighters and add them to possible targets
+  gameJson.players.forEach(player => {
+    if(player.class === 'Fighter') {possibleOwlbearTargets.push(player.name);}
+  });
+
+  // if there were no fighters, add everyone in the party
+  if(possibleOwlbearTargets.length <= 0) {
+    gameJson.players.forEach(player => {
+      possibleOwlbearTargets.push(player.name);
+    });
+  }
+
+  console.log(`Owlbear targets: ${possibleOwlbearTargets}`);
+
+}
+
+//The party damages the owlbears
 function owlbearDmgTaken() {
   var owlbearAC = 15;
 
@@ -179,7 +200,7 @@ function owlbearDmgTaken() {
           flanked = true;
           console.log(`Hit for ${dmg} damage.`);
         }
-        break;
+        break;  
       case 'Cleric':
         var lowHP;
         gameJson.players.forEach(player => {
@@ -215,7 +236,7 @@ function owlbearDmgTaken() {
   }});
 }
 
-// Called to hurt the first owlbear in the array
+// Called to reduce owlbear hp and remove dead ones
 function hurtOwlbear (dmg, howmany) {
   for (i=0; i<howmany; i++) {
     if(gameJson.owlbears[i]>=0) {gameJson.owlbears[i] -= dmg;}
