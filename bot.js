@@ -147,16 +147,13 @@ function cmdSwitch(commandName, target, context) {
 function spawnOwlbears () {
   var owlbearArr = [];
   var partySize = gameJson.players.length;
-  console.log(partySize);
   for (i=0; i<=partySize; i+=2) {
-    console.log(`and another one`);
     var hp = 25;
-    for (i=1; i<=5; i++)  {
+    for (j=1; j<=5; j++)  {
       hp += rollDice(10);
     }
     owlbearArr.push(hp);
   }
-  console.log(owlbearArr);
   gameJson.owlbears = owlbearArr;
 }
 
@@ -169,15 +166,17 @@ function combatRound() {
 }
 
 function owlbearDmgTaken() {
+  var owlbearAC = 15;
+
   var dmg = 0;
   var flanked = false;
   gameJson.players.forEach(player => {
     var toHit = rollDice(20);
     switch(player.class) {
       case 'Fighter':
-        if((toHit+3) >= 13) {
-          dmg = rollDice(8) + 2;
-          hurtOwlbear(dmg);
+        if((toHit+8) >= owlbearAC) {
+          dmg = rollDice(8) + 3;
+          hurtOwlbear(dmg, 1);
           flanked = true;
           console.log(`Hit for ${dmg} damage.`);
         }
@@ -192,14 +191,14 @@ function owlbearDmgTaken() {
         });
         break;
       case 'Wizard':
-        if(gameJson.howManyRounds<=3) {
-          dmg = rollDice(12) + rollDice(12) + 2;
-          hurtOwlbear(dmg);
+        if(gameJson.howManyRounds<=4) {
+          dmg = rollDice(6) + rollDice(6) + 2;
+          hurtOwlbear(dmg, 3);
           console.log(`Magicd for ${dmg} damage.`);
         }
-        else if((toHit-1) >= 13) {
-          dmg = rollDice(4) - 1;
-          hurtOwlbear(dmg);
+        else if((toHit+1) >= owlbearAC) {
+          dmg = rollDice(6) - 1;
+          hurtOwlbear(dmg, 1);
           flanked = true;
         }
         break;
@@ -208,19 +207,21 @@ function owlbearDmgTaken() {
   gameJson.players.forEach(player => {
     if(player.class === 'Rogue') {
       var toHit = rollDice(20);
-      if((toHit+1) >= 13) {
+      if((toHit+4) >= owlbearAC) {
         dmg = rollDice(8);
-        if(flanked) {dmg += rollDice(6) + rollDice(6);}
-        hurtOwlbear(dmg);
+        if(flanked) {dmg += rollDice(6) + rollDice(6) + rollDice(6);}
+        hurtOwlbear(dmg, 1);
         console.log(`Rogued for ${dmg} damage.`);
       }
   }});
 }
 
 // Called to hurt the first owlbear in the array
-function hurtOwlbear (dmg) {
-  if(gameJson.owlbears[0] > dmg) {gameJson.owlbears[0] -= dmg;}
-  else gameJson.owlbears.shift();
+function hurtOwlbear (dmg, howmany) {
+  for (i=0; i<howmany; i++) {
+    if(gameJson.owlbears[i]>=0) {gameJson.owlbears[i] -= dmg;}
+  }
+  if(gameJson.owlbears[0]<=0) {gameJson.owlbears.shift();}
 }
 
 // Function called when the "dice" command is issued
