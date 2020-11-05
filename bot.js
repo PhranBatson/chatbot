@@ -92,8 +92,8 @@ function cmdSwitch(commandName, target, context) {
     case '!owlbear':
       gameJson.activeBattle = true;
       client.say(target, `THWOMP!!`)
-      // create owlbear with hp based on party size
-      gameJson.owlbears = spawnOwlbear(gameJson.players.length);
+      // create # of owlbears based on party size
+      spawnOwlbears();
       gameJson.howManyRounds = 0;
       while(gameJson.owlbears.length>0) {
         console.log(`Owlbear HP: ${gameJson.owlbears}`);
@@ -144,18 +144,20 @@ function cmdSwitch(commandName, target, context) {
 }
 
 // Function to calculate owlbear size
-function spawnOwlbear (partySize) {
+function spawnOwlbears () {
   var owlbearArr = [];
+  var partySize = gameJson.players.length;
+  console.log(partySize);
   for (i=0; i<=partySize; i+=2) {
+    console.log(`and another one`);
     var hp = 25;
     for (i=1; i<=5; i++)  {
       hp += rollDice(10);
     }
     owlbearArr.push(hp);
   }
-  console.log(partySize);
   console.log(owlbearArr);
-  return owlbearArr;
+  gameJson.owlbears = owlbearArr;
 }
 
 // Function to simulate one combat round
