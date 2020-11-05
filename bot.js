@@ -29,16 +29,17 @@ var gameJson = {
   activeBattle: false,
   howManyRounds: 0,
   howManyHeals: 0,
+  owlbears: [],
   players: 
     [{
-      name: "playerName",
+      name: "Kyle",
       id: 0,
       class: "Wizard",
       exp: 10,
       hitpoints: 40,
     },
     {
-      name: "playerTwo",
+      name: "OtherKyle",
       id: 1,
       class: "Fighter",
       exp: 100,
@@ -55,6 +56,7 @@ function onMessageHandler (target, context, msg, self) {
 
   // Turn chat message into array
   const commandName = msg.split(' ');
+  // Sends each word in the array to the switch looking for commands
   commandName.forEach(commandName => {cmdSwitch(commandName, target, context);});
 
 }
@@ -88,15 +90,16 @@ function cmdSwitch(commandName, target, context) {
       }
       break;
     case '!owlbear':
-      // gameJson.activeBattle = true;
+      gameJson.activeBattle = true;
       client.say(target, `THWOMP!!`)
       // create owlbear with hp based on party size
-      var owlbearHP = spawnOwlbear(gameJson.players.length);
+      gameJson.owlbears = spawnOwlbear(gameJson.players.length);
       gameJson.howManyRounds = 0;
-      while(owlbearHP>0) {
-        console.log(`Owlbear HP: ${owlbearHP}`);
-        owlbearHP -= combatRound();
+      while(gameJson.owlbears.length>0) {
+        console.log(`Owlbear HP: ${gameJson.owlbears}`);
+        combatRound();
       }
+      gameJson.activeBattle = false;
       console.log(`* Executed ${commandName} command`);
       break;
     case '!fighter':
@@ -142,19 +145,25 @@ function cmdSwitch(commandName, target, context) {
 
 // Function to calculate owlbear size
 function spawnOwlbear (partySize) {
-  var hp = 21;
-  for (i=0; i<=partySize; i++)  {
-    hp += rollDice(10) + rollDice(10);
+  var owlbearArr = [];
+  for (i=0; i<=partySize; i+=2) {
+    var hp = 25;
+    for (i=1; i<=5; i++)  {
+      hp += rollDice(10);
+    }
+    owlbearArr.push(hp);
   }
-  return hp;
+  console.log(partySize);
+  console.log(owlbearArr);
+  return owlbearArr;
 }
 
 // Function to simulate one combat round
-// -returns change to owlbear hp
+// -returns changed owlbear array
 function combatRound() {
   gameJson.howManyRounds++;
 
-  return owlbearDmgTaken();
+  owlbearDmgTaken();
 }
 
 function owlbearDmgTaken() {
@@ -164,8 +173,9 @@ function owlbearDmgTaken() {
     var toHit = rollDice(20);
     switch(player.class) {
       case 'Fighter':
-        if((toHit+3) >= 15) {
-          dmg += rollDice(8) + 2;
+        if((toHit+3) >= 13) {
+          dmg = rollDice(8) + 2;
+          hurtOwlbear(dmg);
           flanked = true;
           console.log(`Hit for ${dmg} damage.`);
         }
@@ -181,11 +191,13 @@ function owlbearDmgTaken() {
         break;
       case 'Wizard':
         if(gameJson.howManyRounds<=3) {
-          dmg += rollDice(12) + rollDice(12) + 2;
+          dmg = rollDice(12) + rollDice(12) + 2;
+          hurtOwlbear(dmg);
           console.log(`Magicd for ${dmg} damage.`);
         }
-        else if((toHit-1) >= 15) {
-          dmg += rollDice(4) - 1;
+        else if((toHit-1) >= 13) {
+          dmg = rollDice(4) - 1;
+          hurtOwlbear(dmg);
           flanked = true;
         }
         break;
@@ -194,14 +206,19 @@ function owlbearDmgTaken() {
   gameJson.players.forEach(player => {
     if(player.class === 'Rogue') {
       var toHit = rollDice(20);
-      if((toHit+1) >= 15) {
-        dmg += rollDice(8);
+      if((toHit+1) >= 13) {
+        dmg = rollDice(8);
         if(flanked) {dmg += rollDice(6) + rollDice(6);}
+        hurtOwlbear(dmg);
         console.log(`Rogued for ${dmg} damage.`);
       }
   }});
+}
 
-  return dmg;
+// Called to hurt the first owlbear in the array
+function hurtOwlbear (dmg) {
+  if(gameJson.owlbears[0] > dmg) {gameJson.owlbears[0] -= dmg;}
+  else gameJson.owlbears.shift();
 }
 
 // Function called when the "dice" command is issued
