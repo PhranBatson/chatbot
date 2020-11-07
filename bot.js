@@ -35,14 +35,16 @@ var gameJson = {
       id: 0,
       class: "Wizard",
       exp: 10,
-      hitpoints: 40,
+      hitpoints: 20,
+      dmgDone: 0,
     },
     {
       name: "OtherKyle",
       id: 1,
       class: "Fighter",
       exp: 100,
-      hitpoints: 40,
+      hitpoints: 75,
+      dmgDone: 0,
     }],
 }
 
@@ -83,7 +85,8 @@ function cmdSwitch(commandName, target, context) {
           id: gameJson.players.length,
           class: "Fighter", 
           exp: 0, 
-          hitpoints: 40,
+          hitpoints: 75,
+          dmgDone: 0,
         });
         console.log(`* Added  ${context['display-name']} to the party`);
       }
@@ -105,6 +108,7 @@ function cmdSwitch(commandName, target, context) {
       gameJson.players.forEach(player => {
         if(player.name === context['display-name']) {
           player.class = "Fighter";
+          player.hitpoints = 75;
           console.log(`* Changed ${context['display-name']} class to Fighter.`);
       }});
       break;
@@ -112,6 +116,7 @@ function cmdSwitch(commandName, target, context) {
       gameJson.players.forEach(player => {
         if(player.name === context['display-name']) {
           player.class = "Cleric";
+          player.hitpoints = 35;
           console.log(`* Changed ${context['display-name']} class to Cleric.`);
       }});
       break;
@@ -119,6 +124,7 @@ function cmdSwitch(commandName, target, context) {
       gameJson.players.forEach(player => {
         if(player.name === context['display-name']) {
           player.class = "Rogue";
+          player.hitpoints = 30;
           console.log(`* Changed ${context['display-name']} class to Rogue.`);
       }});
       break;
@@ -126,6 +132,7 @@ function cmdSwitch(commandName, target, context) {
       gameJson.players.forEach(player => {
         if(player.name === context['display-name']) {
           player.class = "Wizard";
+          player.hitpoints = 20;
           console.log(`* Changed ${context['display-name']} class to Wizard.`);
       }});
       break;
