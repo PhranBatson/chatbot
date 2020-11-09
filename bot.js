@@ -99,15 +99,17 @@ function cmdSwitch(commandName, target, context) {
       client.say(target, `THWOMP!!`)
       // create # of owlbears based on party size
       spawnOwlbears();
+      // reset battle statistics
       gameJson.players.forEach(player => { player.dmgDone = 0; })
       gameJson.howManyRounds = 0;
       gameJson.howManyHeals = 0;
+      resetPlayerHP();
+      // call combat round fx while owlbears are alive
       while(gameJson.owlbears.length>0) {
         console.log(`Owlbear HP: ${gameJson.owlbears}`);
         combatRound();
       }
       gameJson.activeBattle = false;
-      resetPlayerHP();
       reportCombat(target);
       console.log(`* Executed ${commandName} command`);
       break;
@@ -174,7 +176,6 @@ function spawnOwlbears () {
 }
 
 // Function to simulate one combat round
-// -returns changed owlbear array
 function combatRound() {
   gameJson.howManyRounds++;
   partyDmgTaken();
@@ -242,7 +243,7 @@ function owlbearDmgTaken() {
         }
         break;
       case 'Wizard':
-        if(gameJson.howManyRounds<4) {
+        if(gameJson.howManyRounds<=4) {
           dmg = rollDice(6) + rollDice(6) + 2;
           hurtOwlbear(dmg, 3);
           console.log(`Magicd for ${dmg} damage.`);
