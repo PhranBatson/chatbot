@@ -35,14 +35,18 @@ var gameJson = {
       id: 0,
       class: "Wizard",
       exp: 10,
-      hitpoints: 40,
+      ac: 11,
+      hitpoints: 20,
+      dmgDone: 0,
     },
     {
       name: "OtherKyle",
       id: 1,
       class: "Fighter",
       exp: 100,
-      hitpoints: 40,
+      ac: 18,
+      hitpoints: 75,
+      dmgDone: 0,
     }],
 }
 
@@ -82,8 +86,10 @@ function cmdSwitch(commandName, target, context) {
           name: context['display-name'], 
           id: gameJson.players.length,
           class: "Fighter", 
-          exp: 0, 
-          hitpoints: 40,
+          exp: 0,
+          ac: 18, 
+          hitpoints: 75,
+          dmgDone: 0,
         });
         console.log(`* Added  ${context['display-name']} to the party`);
       }
@@ -93,18 +99,24 @@ function cmdSwitch(commandName, target, context) {
       client.say(target, `THWOMP!!`)
       // create # of owlbears based on party size
       spawnOwlbears();
+      gameJson.players.forEach(player => { player.dmgDone = 0; })
       gameJson.howManyRounds = 0;
+      gameJson.howManyHeals = 0;
       while(gameJson.owlbears.length>0) {
         console.log(`Owlbear HP: ${gameJson.owlbears}`);
         combatRound();
       }
       gameJson.activeBattle = false;
+      resetPlayerHP();
+      reportCombat(target);
       console.log(`* Executed ${commandName} command`);
       break;
     case '!fighter':
       gameJson.players.forEach(player => {
         if(player.name === context['display-name']) {
           player.class = "Fighter";
+          player.hitpoints = 75;
+          player.ac = 17;
           console.log(`* Changed ${context['display-name']} class to Fighter.`);
       }});
       break;
@@ -112,6 +124,8 @@ function cmdSwitch(commandName, target, context) {
       gameJson.players.forEach(player => {
         if(player.name === context['display-name']) {
           player.class = "Cleric";
+          player.hitpoints = 35;
+          player.ac = 15;
           console.log(`* Changed ${context['display-name']} class to Cleric.`);
       }});
       break;
@@ -119,6 +133,8 @@ function cmdSwitch(commandName, target, context) {
       gameJson.players.forEach(player => {
         if(player.name === context['display-name']) {
           player.class = "Rogue";
+          player.hitpoints = 30;
+          player.ac = 13;
           console.log(`* Changed ${context['display-name']} class to Rogue.`);
       }});
       break;
@@ -126,6 +142,8 @@ function cmdSwitch(commandName, target, context) {
       gameJson.players.forEach(player => {
         if(player.name === context['display-name']) {
           player.class = "Wizard";
+          player.hitpoints = 20;
+          player.ac = 11;
           console.log(`* Changed ${context['display-name']} class to Wizard.`);
       }});
       break;
@@ -159,7 +177,6 @@ function spawnOwlbears () {
 // -returns changed owlbear array
 function combatRound() {
   gameJson.howManyRounds++;
-
   partyDmgTaken();
   owlbearDmgTaken();
 }
@@ -182,6 +199,13 @@ function partyDmgTaken() {
 
   console.log(`Owlbear targets: ${possibleOwlbearTargets}`);
 
+  gameJson.owlbears.forEach(owlbear => {
+    var target = rollDice(possibleOwlbearTargets.length);
+    console.log(possibleOwlbearTargets[target-1]);
+    // hurtPlayer(9, rollDice(6)+5, possibleOwlbearTargets[target-1]);
+    hurtPlayer(9, rollDice(6)+5, possibleOwlbearTargets[target-1]);
+    hurtPlayer(4, rollDice(8)+2, possibleOwlbearTargets[target-1]);
+  })
 }
 
 //The party damages the owlbears
@@ -202,16 +226,23 @@ function owlbearDmgTaken() {
         }
         break;  
       case 'Cleric':
-        var lowHP;
-        gameJson.players.forEach(player => {
-          // find who has least hp
-          if(player.hitpoints<40) {
-
-          }
-        });
+        if(gameJson.howManyHeals<2) {
+          gameJson.players.forEach(player => {
+            if(player.hitpoints <= 0) {
+              player.hitpoints = rollDice(8) + rollDice(8) + rollDice(8) + 1;
+              gameJson.howManyHeals++;
+              console.log(`Healed for ${player.hitpoints}.`);
+            }
+          });
+        }
+        else if((toHit+4) >= owlbearAC) {
+          dmg = rollDice(8);
+          hurtOwlbear(dmg, 1);
+          flanked = true;
+        }
         break;
       case 'Wizard':
-        if(gameJson.howManyRounds<=4) {
+        if(gameJson.howManyRounds<4) {
           dmg = rollDice(6) + rollDice(6) + 2;
           hurtOwlbear(dmg, 3);
           console.log(`Magicd for ${dmg} damage.`);
@@ -236,12 +267,49 @@ function owlbearDmgTaken() {
   }});
 }
 
+// Called to reduce player's hp
+function hurtPlayer (hitMod, dmg, who) {
+  var toHit = rollDice(20) + hitMod;
+  gameJson.players.forEach(player => {
+    if(player.name === who) {
+      if(toHit >= player.ac) {
+        player.hitpoints -= dmg;
+        console.log(`${who} was hurt for ${dmg} damage. Now they have ${player.hitpoints} hitpoints.`);
+      }
+  }})
+}
+
 // Called to reduce owlbear hp and remove dead ones
 function hurtOwlbear (dmg, howmany) {
   for (i=0; i<howmany; i++) {
     if(gameJson.owlbears[i]>=0) {gameJson.owlbears[i] -= dmg;}
   }
   if(gameJson.owlbears[0]<=0) {gameJson.owlbears.shift();}
+}
+
+// Function to report the combat's results to chat
+function reportCombat (target) {
+  var outstring = "Combat completed.";
+  client.say(target, outstring);
+}
+
+// Function to return player hitpoints to full after combat is finished
+function resetPlayerHP () {
+  gameJson.players.forEach(player => {
+    switch(player.class) {
+      case 'Fighter':
+        player.hitpoints = 75;
+        break;
+      case 'Cleric':
+        player.hitpoints = 35;
+        break;
+      case 'Wizard':
+        player.hitpoints = 20;
+        break;
+      case 'Rogue':
+        player.hitpoints = 30;
+        break;
+  }})
 }
 
 // Function called when the "dice" command is issued
